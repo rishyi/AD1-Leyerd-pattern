@@ -1,5 +1,6 @@
 package com.example.layeredarchitecture.controller;
 
+import com.example.layeredarchitecture.dao.CustomerDAO;
 import com.example.layeredarchitecture.dao.CustomerDAOImpl;
 import com.example.layeredarchitecture.dao.ItemDAO;
 import com.example.layeredarchitecture.dao.ItemDAOImpl;
@@ -40,6 +41,7 @@ public class ManageCustomersFormController {
     public TableView<CustomerTM> tblCustomers;
     public JFXButton btnAddNewCustomer;
     private ItemDAO itemDAO = new ItemDAOImpl();
+    private CustomerDAO customerDAO = new CustomerDAOImpl();
 
     public void initialize() {
         tblCustomers.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -72,8 +74,7 @@ public class ManageCustomersFormController {
         tblCustomers.getItems().clear();
         /*Get all customers*/
         try {
-            CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
-            ArrayList<CustomerDTO> arrayList = customerDAOImpl.getAllCustomer();
+            ArrayList<CustomerDTO> arrayList = customerDAO.getAllCustomer();
 
             for (CustomerDTO customerDTO:arrayList){
                 tblCustomers.getItems().add(new CustomerTM(customerDTO.getId(),customerDTO.getName(),customerDTO.getAddress()) );
@@ -127,7 +128,6 @@ public class ManageCustomersFormController {
 
 
     public void btnSave_OnAction(ActionEvent actionEvent) {
-        CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
         String id = txtCustomerId.getText();
         String name = txtCustomerName.getText();
         String address = txtCustomerAddress.getText();
@@ -145,10 +145,9 @@ public class ManageCustomersFormController {
         if (btnSave.getText().equalsIgnoreCase("save")) {
             /*Save Customer*/
             try {
-                if (customerDAOImpl.ExistCustomerImpl(id)) {
+                if (customerDAO.ExistCustomerImpl(id)) {
                     new Alert(Alert.AlertType.ERROR, id + " already exists").show();
                 }
-               CustomerDAOImpl customerDAO = new CustomerDAOImpl();
                customerDAO.CustomerSaveImpl(id,name,address);
                 tblCustomers.getItems().add(new CustomerTM(id, name, address));
             } catch (SQLException e) {
@@ -161,10 +160,10 @@ public class ManageCustomersFormController {
         } else {
             /*Update customer*/
             try {
-                if (!customerDAOImpl.ExistCustomerImpl(id)) {
+                if (!customerDAO.ExistCustomerImpl(id)) {
                     new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
                 }
-                customerDAOImpl.updateImpl(name,address,id);
+                customerDAO.updateImpl(name,address,id);
             } catch (SQLException e) {
                 new Alert(Alert.AlertType.ERROR, "Failed to update the customer " + id + e.getMessage()).show();
             } catch (ClassNotFoundException e) {
@@ -183,14 +182,13 @@ public class ManageCustomersFormController {
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
         /*Delete Customer*/
-        CustomerDAOImpl customerDAOImpl = new CustomerDAOImpl();
 
         String id = tblCustomers.getSelectionModel().getSelectedItem().getId();
         try {
-            if (!customerDAOImpl.ExistCustomerImpl(id)) {
+            if (!customerDAO.ExistCustomerImpl(id)) {
                 new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
             }
-            customerDAOImpl.DeleteImpl(id);
+            customerDAO.DeleteImpl(id);
             tblCustomers.getItems().remove(tblCustomers.getSelectionModel().getSelectedItem());
             tblCustomers.getSelectionModel().clearSelection();
             initUI();
@@ -203,7 +201,6 @@ public class ManageCustomersFormController {
     }
 
     private String generateNewId() {
-        CustomerDAOImpl customerDAO = new CustomerDAOImpl();
         try {
             String currentId = customerDAO.getCurrentId();
             if (currentId!=null) {

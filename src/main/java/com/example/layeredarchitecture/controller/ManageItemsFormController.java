@@ -1,5 +1,6 @@
 package com.example.layeredarchitecture.controller;
 
+import com.example.layeredarchitecture.dao.ItemDAO;
 import com.example.layeredarchitecture.dao.ItemDAOImpl;
 import com.example.layeredarchitecture.db.DBConnection;
 import com.example.layeredarchitecture.model.ItemDTO;
@@ -36,6 +37,7 @@ public class ManageItemsFormController {
     public TableView<ItemTM> tblItems;
     public TextField txtUnitPrice;
     public JFXButton btnAddNewItem;
+    private ItemDAO itemDAO = new ItemDAOImpl();
 
     public void initialize() {
         tblItems.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("code"));
@@ -71,8 +73,7 @@ public class ManageItemsFormController {
         tblItems.getItems().clear();
         try {
             /*Get all items*/
-            ItemDAOImpl itemDAOImpl = new ItemDAOImpl();
-            ArrayList<ItemDTO> arrayList = itemDAOImpl.allItemLoadImpl();
+            ArrayList<ItemDTO> arrayList = itemDAO.allItemLoadImpl();
             for (ItemDTO itemDTO : arrayList ){
                 tblItems.getItems().add(new ItemTM(itemDTO.getCode(), itemDTO.getDescription(),itemDTO.getUnitPrice(),itemDTO.getQtyOnHand()));
             }
@@ -126,7 +127,6 @@ public class ManageItemsFormController {
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
         /*Delete Item*/
-        ItemDAOImpl itemDAO = new ItemDAOImpl();
         String code = tblItems.getSelectionModel().getSelectedItem().getCode();
         try {
             if (!itemDAO.existImpl(code)) {
@@ -206,7 +206,6 @@ public class ManageItemsFormController {
     }
 
     private String generateNewId() {
-        ItemDAOImpl itemDAO = new ItemDAOImpl();
         try {
             String itemId = itemDAO.getCurrentId();
             if (itemId!=null) {
